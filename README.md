@@ -40,6 +40,6 @@ loginCredentials.Add(new FormData("user", "some wrong password"));
 loginCredentials.Add(new FormData("user", "some correct password"));
 
 var wpLoginCracker = new WordpressLoginCracker();
-FormData res = await wpLoginCracker.AttemptLoginAsync(loginUrl, loginCredentials); // return the second `FormData` object.
+FormData res = await wpLoginCracker.AttemptLoginRangeAsync(loginUrl, loginCredentials); // return the second `FormData` object.
 
 ```
