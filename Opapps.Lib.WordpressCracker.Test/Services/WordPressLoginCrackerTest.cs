@@ -11,13 +11,13 @@ namespace Opapps.Lib.WordpressCracker.Test.Services
 {
     public class WordPressLoginCrackerTest
     {
-        private static readonly string TESTING_URL = "https://some-url.com/wp-login.php";
+        private static readonly Uri TESTING_URL = new Uri("https://some-url.com/wp-login.php");
 
         [Fact]
         public async Task AttemptLogin_WhenUsernamePasswordCorrect_LoginSuccess()
         {
             var formData = new FormData("user", "correct password");
-            var loginService = new WordpressLoginCracker(new HttpClient(HttpMessageHandlerMockFactory.Create(formData)));
+            var loginService = new WordpressLoginCrackerMock();
 
             bool result = await loginService.AttemptLoginAsync(TESTING_URL, formData);
 
@@ -29,7 +29,7 @@ namespace Opapps.Lib.WordpressCracker.Test.Services
         {
             var formData = new FormData("user", "wrong password");
 
-            var loginService = new WordpressLoginCracker(new HttpClient(HttpMessageHandlerMockFactory.Create(formData)));
+            var loginService = new WordpressLoginCrackerMock();
 
             bool result = await loginService.AttemptLoginAsync(TESTING_URL, formData);
 
