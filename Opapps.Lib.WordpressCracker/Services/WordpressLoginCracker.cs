@@ -1,7 +1,6 @@
 ﻿using Opapps.Lib.WordpressCracker.Entities;
 using Opapps.Lib.WordpressCracker.Entities.Interfaces;
-using Opapps.Lib.WordpressCracker.Factories;
-using Opapps.Lib.WordpressCracker.Helpers;
+using Opapps.Lib.WordpressCracker.Services.Abstracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,22 +9,15 @@ using System.Threading.Tasks;
 
 namespace Opapps.Lib.WordpressCracker.Services
 {
-    public class WordpressLoginCracker
+    public class WordpressLoginCracker : WordpressCrackerService
     {
-        private readonly HttpClient _httpClient;
 
-        public WordpressLoginCracker()
-        {
-            _httpClient = CreateHttpClient();
-        }
+        public WordpressLoginCracker() : base() { }
 
         /// <summary>
         /// Create an object of this class with a custom <c>RequestConfiguration</c> object. This is particularly useful to set a proxy.
         /// </summary>
-        public WordpressLoginCracker(IRequestConfiguration config)
-        {
-            _httpClient = CreateHttpClientWithConfig(config);
-        }
+        public WordpressLoginCracker(IRequestConfiguration config) : base(config) { }
 
         /// <summary>
         /// Attempt to login to <paramref name="loginUrl"/> with <paramref name="loginCredential"/> using form-data authentication. 
@@ -69,31 +61,6 @@ namespace Opapps.Lib.WordpressCracker.Services
             if (responseAbsolutePath == null) return false;
             return responseAbsolutePath.Contains("wp-admin") || (!responseAbsolutePath.Contains("wp-login.php") && !responseAbsolutePath.Contains(loginUrl.AbsolutePath));
         }
-
-        private HttpClient CreateHttpClient()
-        {
-            return HttpClientFactory.Create();
-        }
-
-        private HttpClient CreateHttpClientWithConfig(IRequestConfiguration config)
-        {
-            return HttpClientFactory.Create(config);
-        }
-
-        protected virtual async Task<HttpResponseMessage> PostAsync(Uri loginUrl, FormData loginCredential)
-        {
-            var formContent = RequestParametersEncoder.GetFormUrlEncodedContentFrom(loginCredential.Username, loginCredential.Password);
-            return await _httpClient.PostAsync(loginUrl, formContent);
-        }
-
-        ~WordpressLoginCracker() {
-            _httpClient.Dispose();
-        }
-
-        //private Task EnsureIpAddressNotBlocked()
-        //{
-        //    EnsureIpAddressNotBlockedByLimitLoginAttemptsReloaded();
-        //}
 
     }
 }
