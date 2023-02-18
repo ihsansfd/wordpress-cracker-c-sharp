@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Opapps.Lib.WordpressCracker.Helpers.Interfaces
 {
-    public interface IHtmlParser
-    { 
-        public string? GetInnerTextWithXpath(string xpathPattern, string html);
+    public interface ICsvLoader<RecordType>
+    {
+        public IEnumerable<RecordType> EnumerateRecords(string fileName);
     }
 }

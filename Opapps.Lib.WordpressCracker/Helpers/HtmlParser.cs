@@ -17,16 +17,16 @@ namespace Opapps.Lib.WordpressCracker.Helpers
             return htmlDoc;
         }
 
-        public HtmlNode SelectNodeWithXpath(string xpathPattern, string html)
+        public HtmlNode? SelectNodeWithXpath(string xpathPattern, string html)
         {
             var htmlDoc = ParseHtml(html);
             return htmlDoc.DocumentNode.SelectSingleNode(xpathPattern);
 
         }
 
-        public string GetInnerTextWithXpath(string xpathPattern, string html)
+        public string? GetInnerTextWithXpath(string xpathPattern, string html)
         {
-            return SelectNodeWithXpath(xpathPattern, html).InnerText;
+            return SelectNodeWithXpath(xpathPattern, html)?.InnerText;
         }
     }
 }
