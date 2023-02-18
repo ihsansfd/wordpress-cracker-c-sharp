@@ -1,6 +1,7 @@
 ﻿using Opapps.Lib.WordpressCracker.Entities;
 using Opapps.Lib.WordpressCracker.Services;
 using Opapps.Lib.WordpressCracker.Test.Mocks;
+using static Opapps.Lib.WordpressCracker.Test.Mocks.WordpressLoginCrackerMockData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace Opapps.Lib.WordpressCracker.Test.Services
         [Fact]
         public async Task AttemptLogin_WhenUsernamePasswordCorrect_LoginSuccess()
         {
-            var formData = new FormData("user", "correct password");
+            var formData = new FormData(CORRECT_USERNAME, CORRECT_PASSWORD);
             var loginService = new WordpressLoginCrackerMock();
 
             bool result = await loginService.AttemptLoginAsync(TESTING_URL, formData);
@@ -27,7 +28,7 @@ namespace Opapps.Lib.WordpressCracker.Test.Services
         [Fact]
         public async Task AttemptLogin_WhenUsernamePasswordIncorrect_LoginFailed()
         {
-            var formData = new FormData("user", "wrong password");
+            var formData = new FormData(CORRECT_USERNAME, "wrong");
 
             var loginService = new WordpressLoginCrackerMock();
 

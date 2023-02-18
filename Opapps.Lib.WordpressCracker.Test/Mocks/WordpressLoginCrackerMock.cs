@@ -9,10 +9,16 @@ using System.Threading.Tasks;
 
 namespace Opapps.Lib.WordpressCracker.Test.Mocks
 {
+
+    public static class WordpressLoginCrackerMockData
+    {
+        public static readonly string CORRECT_USERNAME = "user";
+        public static readonly string CORRECT_PASSWORD = "correct password";
+    }
     internal class WordpressLoginCrackerMock : WordpressLoginCracker
     {
-        private static readonly string CORRECT_USERNAME = "user";
-        private static readonly string CORRECT_PASSWORD = "correct password";
+        private static readonly string CORRECT_USERNAME = WordpressLoginCrackerMockData.CORRECT_USERNAME;
+        private static readonly string CORRECT_PASSWORD = WordpressLoginCrackerMockData.CORRECT_PASSWORD;
         protected override Task<HttpResponseMessage> PostAsync(Uri loginUrl, FormData loginCredential)
         {
             return Task.FromResult(loginCredential.Username == CORRECT_USERNAME && loginCredential.Password == CORRECT_PASSWORD ?

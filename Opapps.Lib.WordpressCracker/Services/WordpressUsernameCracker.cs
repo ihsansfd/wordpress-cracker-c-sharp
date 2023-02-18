@@ -15,7 +15,9 @@ namespace Opapps.Lib.WordpressCracker.Services
     public class WordpressUsernameCracker : WordpressCrackerService
     {
         private readonly static IHtmlParser _htmlParser = new HtmlParser();
-        private readonly IUsernameCrackingConfiguration _config;
+        private IUsernameCrackingConfiguration _config;
+
+        public IUsernameCrackingConfiguration Config { get => _config; set => _config = value; }
         public WordpressUsernameCracker() : base()
         {
             _config = new UsernameCrackingConfiguration();
@@ -40,7 +42,7 @@ namespace Opapps.Lib.WordpressCracker.Services
         public async Task<bool> AttemptGettingValidUsername(Uri loginUrl, string username)
         {
             using HttpResponseMessage response = await PostAsync(loginUrl, new FormData(username, _config.DummyPassword));
-            string htmlContent = await response.Content.ReadAsStringAsync();
+            string htmlContent = await GetHtmlContent(response);
 
             string? errorMessage = _htmlParser.GetInnerTextWithXpath("//div[@id = 'login_error']", htmlContent)?.Trim();
 
@@ -80,12 +82,17 @@ namespace Opapps.Lib.WordpressCracker.Services
             return validUsernames.Any() ? validUsernames : null;
         }
 
+        protected virtual Task<string> GetHtmlContent(HttpResponseMessage response)
+        {
+            return response.Content.ReadAsStringAsync();
+        }
+
         private bool CheckUsernameValid(string? errorMessage, IUsernameCrackingConfiguration config)
         {
-            if (errorMessage == null) return true; // login success, wew. 1/10000 probability.
+            if (errorMessage == null) return true; // login success, wew. 1/100000000000 probability.
 
             if (config.AutoDetectUsernameErrorMessage) {
-                // TODO
+                // TODO : implement the auto-detect
                 throw new NotImplementedException("Sorry, for auto-detect username error message feature, currently haven't been implemented");
             } 
             
