@@ -42,6 +42,7 @@ namespace Opapps.Lib.WordpressCracker.Services
         public async Task<bool> AttemptGettingValidUsername(Uri loginUrl, string username)
         {
             using HttpResponseMessage response = await PostAsync(loginUrl, new FormData(username, _config.DummyPassword));
+            response.EnsureSuccessStatusCode();
             string htmlContent = await GetHtmlContent(response);
 
             string? errorMessage = _htmlParser.GetInnerTextWithXpath("//div[@id = 'login_error']", htmlContent)?.Trim();

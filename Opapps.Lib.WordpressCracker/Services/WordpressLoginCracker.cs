@@ -29,6 +29,7 @@ namespace Opapps.Lib.WordpressCracker.Services
         {
             //await EnsureIpAddressNotBlocked();
             using HttpResponseMessage response = await PostAsync(loginUrl, loginCredential);
+            response.EnsureSuccessStatusCode();
             return CheckLoginSuccess(loginUrl, response);
         }
 
