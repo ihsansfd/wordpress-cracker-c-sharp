@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Opapps.Lib.WordpressCracker.Services.Abstracts
 {
-    public abstract class WordpressCrackerService
+    public abstract class WordpressCrackerService : IDisposable
     {
         private readonly HttpClient _httpClient;
 
@@ -42,9 +42,15 @@ namespace Opapps.Lib.WordpressCracker.Services.Abstracts
             return HttpClientFactory.Create(config);
         }
 
-        ~WordpressCrackerService()
+        public void Dispose()
         {
             _httpClient.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        ~WordpressCrackerService()
+        {
+            Dispose();
         }
     }
 }

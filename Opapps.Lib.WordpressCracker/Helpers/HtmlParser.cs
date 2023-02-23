@@ -10,14 +10,14 @@ namespace Opapps.Lib.WordpressCracker.Helpers
 {
     public class HtmlParser : IHtmlParser
     {
-        public HtmlDocument ParseHtml(string html)
+        public static HtmlDocument ParseHtml(string html)
         {
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(html);
             return htmlDoc;
         }
 
-        public HtmlNode? SelectNodeWithXpath(string xpathPattern, string html)
+        public static HtmlNode? SelectNodeWithXpath(string xpathPattern, string html)
         {
             var htmlDoc = ParseHtml(html);
             return htmlDoc.DocumentNode.SelectSingleNode(xpathPattern);
@@ -27,6 +27,11 @@ namespace Opapps.Lib.WordpressCracker.Helpers
         public string? GetInnerTextWithXpath(string xpathPattern, string html)
         {
             return SelectNodeWithXpath(xpathPattern, html)?.InnerText;
+        }
+
+        public string? GetOuterHtmlWithXpath(string xpathPattern, string html)
+        {
+            return SelectNodeWithXpath(xpathPattern, html)?.OuterHtml;
         }
     }
 }

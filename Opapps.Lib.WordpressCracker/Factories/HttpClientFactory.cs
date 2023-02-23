@@ -28,7 +28,12 @@ namespace Opapps.Lib.WordpressCracker.Factories
                 Proxy = config.Proxy,
                 UseCookies = config.UseCookies,
             };
-            return new HttpClient(httpHandler);
+
+            var httpClient = new HttpClient(httpHandler);
+
+            if(config.UserAgent != null) httpClient.DefaultRequestHeaders.Add("User-Agent", config.UserAgent);
+
+            return httpClient;
         }
     }
 }

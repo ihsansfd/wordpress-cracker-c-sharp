@@ -23,7 +23,7 @@ namespace Opapps.Lib.WordpressCracker.Test.Services
         [Fact]
         public async Task AttemptGettingValidUsername_WhenUsernameIsInvalid_ReturnFalse()
         {
-            bool res = await _service.AttemptGettingValidUsername(TESTING_URL, "wrong");
+            bool res = await _service.AttemptGettingValidUsername(TESTING_URL, INVALID_USERNAME);
             Assert.False(res);
         } 
         
@@ -32,6 +32,13 @@ namespace Opapps.Lib.WordpressCracker.Test.Services
         {
             bool res = await _service.AttemptGettingValidUsername(TESTING_URL, VALID_USERNAME);
             Assert.True(res);
+        }
+
+        [Fact]
+        public async Task AttemptGettingValidUsername_WhenErrorMessageOtherThanInvalidPassword_UsernameIsInvalid_ReturnFalse()
+        {
+            bool res = await _service.AttemptGettingValidUsername(TESTING_URL, IP_GET_BLOCKED_USERNAME);
+            Assert.False(res);
         }
     }
 }

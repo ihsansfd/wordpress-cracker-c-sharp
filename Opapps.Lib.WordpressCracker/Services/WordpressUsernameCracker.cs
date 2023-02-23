@@ -45,17 +45,17 @@ namespace Opapps.Lib.WordpressCracker.Services
             response.EnsureSuccessStatusCode();
             string htmlContent = await GetHtmlContent(response);
 
-            string? errorMessage = _htmlParser.GetInnerTextWithXpath("//div[@id = 'login_error']", htmlContent)?.Trim();
+            string? errorMessageOuterHtml = _htmlParser.GetOuterHtmlWithXpath("//div[@id = 'login_error']", htmlContent)?.Trim();
 
-            return CheckUsernameValid(errorMessage, _config);
+            return CheckPasswordInvalid(errorMessageOuterHtml);
 
         }
 
         /// <summary>
         /// Check to see for a valid username, and will stop executing after getting a valid username.
         /// </summary>
-        /// <returns>The valid username if exists, otherwise null</returns>
-        public async Task<string?> AttemptGettingValidUsernameRange(Uri loginUrl, IEnumerable<string> usernames)
+        /// <returns>The valid username if exists, otherwise empty string</returns>
+        public async Task<string> AttemptGettingValidUsernameRange(Uri loginUrl, IEnumerable<string> usernames)
         {
             foreach(var username in usernames)
             {
@@ -63,14 +63,14 @@ namespace Opapps.Lib.WordpressCracker.Services
                 if (isValidUsername) return username;
             }
 
-            return null;
+            return String.Empty;
         }
 
         /// <summary>
         /// Check to see for all valid usernames
         /// </summary>
-        /// <returns>The valid usernames if any, otherwise null</returns>
-        public async Task<IEnumerable<string>?> AttemptGettingValidUsernamesRange(Uri loginUrl, IEnumerable<string> usernames) 
+        /// <returns>The valid usernames if any, otherwise empty array</returns>
+        public async Task<IEnumerable<string>> AttemptGettingValidUsernamesRange(Uri loginUrl, IEnumerable<string> usernames) 
         {
             List<string> validUsernames = new();
 
@@ -80,7 +80,7 @@ namespace Opapps.Lib.WordpressCracker.Services
                 if (isValidUsername) validUsernames.Add(username);
             }
 
-            return validUsernames.Any() ? validUsernames : null;
+            return validUsernames;
         }
 
         protected virtual Task<string> GetHtmlContent(HttpResponseMessage response)
@@ -88,20 +88,25 @@ namespace Opapps.Lib.WordpressCracker.Services
             return response.Content.ReadAsStringAsync();
         }
 
-        private bool CheckUsernameValid(string? errorMessage, IUsernameCrackingConfiguration config)
+        /**
+         * Probably we don't even need this anymore.
+         **/
+        private static bool CheckUsernameInvalid(string? errorMessage, IUsernameCrackingConfiguration config)
         {
-            if (errorMessage == null) return true; // login success, wew. 1/100000000000 probability.
+            if (errorMessage == null) return false; // login success, wew. 1/100000000000 probability.
 
             if (config.AutoDetectUsernameErrorMessage) {
                 // TODO : implement the auto-detect
                 throw new NotImplementedException("Sorry, for auto-detect username error message feature, currently haven't been implemented");
             } 
             
-            // Calculate similarity to check to see if the error message that we get is not a wrong username error message.
-            // If so, then it's the other error message (hopefully is a wrong password error message), return true.
-            // A better way perhaps we also calculate similarity to check if the error message is a wrong password error message,
-            // but it's another work for another day.
-            return !(config.UsernameErrorMessage.CalculateSimilarityWith(errorMessage) > 0.65);
+            // Calculate similarity to check to see if the error message that we get is a wrong username error message.
+            return (config.UsernameErrorMessage.CalculateSimilarityWith(errorMessage) > 0.65);
+        }
+
+        private static bool CheckPasswordInvalid(string? errorMessageHtml)
+        {
+            return errorMessageHtml != null && errorMessageHtml.Contains("action=lostpassword");
         }
 
     }

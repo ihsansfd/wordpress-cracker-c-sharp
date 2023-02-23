@@ -25,10 +25,7 @@ namespace Opapps.Lib.WordpressCracker.Services
             IEnumerable<LocalizationRecord> records = localizationCsvFileLoader.EnumerateRecords(localizationType + LOCALIZATION_SUFFIX);
 
             var intendedRecord =  records.FirstOrDefault((record) => record.SiteLang == siteLang.Name);
-            if(intendedRecord == null)
-            {
-                throw new SiteLangNotAvailableException();
-            }
+            if(intendedRecord == null) throw new SiteLangNotAvailableException();
 
             return intendedRecord.Text;
         }

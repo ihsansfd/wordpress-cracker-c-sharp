@@ -13,5 +13,6 @@ namespace Opapps.Lib.WordpressCracker.Entities
         public IWebProxy? Proxy { get; set; }
         public bool UseCookies { get; set; }
         public TimeSpan PooledConnectionLifetime { get; set; } = TimeSpan.FromMinutes(60);
+        public string? UserAgent { get; set; }
     }
 }
