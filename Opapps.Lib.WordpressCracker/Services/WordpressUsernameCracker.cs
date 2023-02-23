@@ -18,6 +18,8 @@ namespace Opapps.Lib.WordpressCracker.Services
         private IUsernameCrackingConfiguration _config;
 
         public IUsernameCrackingConfiguration Config { get => _config; set => _config = value; }
+
+        public event Action<CrackingActivityMessageType, string> NewActivityInfo;
         public WordpressUsernameCracker() : base()
         {
             _config = new UsernameCrackingConfiguration();
@@ -41,14 +43,33 @@ namespace Opapps.Lib.WordpressCracker.Services
 
         public async Task<bool> AttemptGettingValidUsername(Uri loginUrl, string username)
         {
+            NewActivityInfo?.Invoke(CrackingActivityMessageType.INFO, String.Format("Begin validating username {0}.", username));
+
             using HttpResponseMessage response = await PostAsync(loginUrl, new FormData(username, _config.DummyPassword));
             response.EnsureSuccessStatusCode();
             string htmlContent = await GetHtmlContent(response);
 
             string? errorMessageOuterHtml = _htmlParser.GetOuterHtmlWithXpath("//div[@id = 'login_error']", htmlContent)?.Trim();
 
-            return CheckPasswordInvalid(errorMessageOuterHtml);
+            bool isPasswordInvalid = CheckPasswordInvalid(errorMessageOuterHtml);
 
+            OnNewUsernameCrackingResultInfo(username, isPasswordInvalid);
+
+            return isPasswordInvalid;
+        }
+
+        private void OnNewUsernameCrackingResultInfo(string username, bool isPasswordInvalid)
+        {
+            if (isPasswordInvalid)
+            {
+                NewActivityInfo?.Invoke(CrackingActivityMessageType.SUCCESS, String.Format("RESULT: Username {0} is valid.", username));
+            }
+
+            else
+            {
+                NewActivityInfo?.Invoke(CrackingActivityMessageType.FAILURE, String.Format("RESULT: Username {0} is invalid.", username));
+
+            }
         }
 
         /// <summary>
@@ -57,11 +78,15 @@ namespace Opapps.Lib.WordpressCracker.Services
         /// <returns>The valid username if exists, otherwise empty string</returns>
         public async Task<string> AttemptGettingValidUsernameRange(Uri loginUrl, IEnumerable<string> usernames)
         {
+            NewActivityInfo?.Invoke(CrackingActivityMessageType.INFO, "Begin validating usernames from the list.");
+
             foreach(var username in usernames)
             {
                 bool isValidUsername = await AttemptGettingValidUsername(loginUrl, username);
                 if (isValidUsername) return username;
             }
+
+            NewActivityInfo?.Invoke(CrackingActivityMessageType.INFO, "The execution has been finished");
 
             return String.Empty;
         }
@@ -72,6 +97,8 @@ namespace Opapps.Lib.WordpressCracker.Services
         /// <returns>The valid usernames if any, otherwise empty array</returns>
         public async Task<IEnumerable<string>> AttemptGettingValidUsernamesRange(Uri loginUrl, IEnumerable<string> usernames) 
         {
+            NewActivityInfo?.Invoke(CrackingActivityMessageType.INFO, "Begin validating usernames from the list.");
+
             List<string> validUsernames = new();
 
             foreach (var username in usernames)
@@ -79,6 +106,8 @@ namespace Opapps.Lib.WordpressCracker.Services
                 bool isValidUsername = await AttemptGettingValidUsername(loginUrl, username);
                 if (isValidUsername) validUsernames.Add(username);
             }
+
+            NewActivityInfo?.Invoke(CrackingActivityMessageType.INFO, "The execution has been finished");
 
             return validUsernames;
         }
